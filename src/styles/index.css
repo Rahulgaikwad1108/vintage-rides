@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
   --bg-dark: #0b0907;
@@ -25,6 +25,9 @@
 
   --shadow-warm: 0 10px 30px rgba(0, 0, 0, 0.7);
   --glow-amber: 0 0 20px rgba(245, 158, 11, 0.35);
+
+  /* Dynamic Lamp Intensity Variable (0.0 to 1.0) */
+  --lamp-intensity: 1.0;
 }
 
 * {
@@ -77,7 +80,7 @@ html, body {
   background: radial-gradient(circle at 50% 40%, #111726 0%, #080b14 70%, #030408 100%) !important;
 }
 
-/* 1. Animated Subtle Film Grain Overlay */
+/* Film Grain Overlay */
 .film-grain {
   position: absolute;
   top: -50%;
@@ -100,7 +103,7 @@ html, body {
   100% { transform: translate(2%, 1%); }
 }
 
-/* 2. Soft Dark Vignette Overlay */
+/* Soft Dark Vignette Overlay */
 .vignette-overlay {
   position: absolute;
   top: 0;
@@ -130,7 +133,7 @@ html, body {
   transition: opacity 0.8s ease;
 }
 
-/* 3. Atmospheric Dust & Rain Canvas */
+/* Atmospheric Dust & Rain Canvas */
 .dust-canvas {
   position: absolute;
   top: 0;
@@ -165,9 +168,7 @@ html, body {
   border-radius: 6px;
 }
 
-/* Keyframe Animations */
-
-/* 4. Ceiling Fan Spin */
+/* Ceiling Fan Spin Animations (Scalable Speeds) */
 @keyframes fanSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -179,9 +180,11 @@ html, body {
   will-change: transform;
 }
 
-.fan-paused {
-  animation-play-state: paused !important;
-}
+.fan-speed-0 { animation: none !important; }
+.fan-speed-1 { animation: fanSpin 14s linear infinite !important; }
+.fan-speed-2 { animation: fanSpin 7s linear infinite !important; }
+.fan-speed-3 { animation: fanSpin 3.2s linear infinite !important; }
+.fan-speed-4 { animation: fanSpin 1.2s linear infinite !important; }
 
 /* Pendant Lamp Gentle Sway */
 @keyframes lampSway {
@@ -196,15 +199,15 @@ html, body {
   will-change: transform;
 }
 
-/* Realistic Subtle Light Bulb Flicker */
+/* Realistic Bulb Filament Glow & Flicker */
 @keyframes lightFlicker {
-  0%, 100% { opacity: 0.96; filter: drop-shadow(0 0 20px rgba(255, 179, 71, 0.5)); }
-  12% { opacity: 0.98; }
-  24% { opacity: 0.92; filter: drop-shadow(0 0 16px rgba(255, 179, 71, 0.4)); }
-  26% { opacity: 1; filter: drop-shadow(0 0 24px rgba(255, 179, 71, 0.65)); }
-  45% { opacity: 0.95; }
-  72% { opacity: 0.99; filter: drop-shadow(0 0 22px rgba(255, 179, 71, 0.55)); }
-  85% { opacity: 0.93; }
+  0%, 100% { opacity: calc(0.96 * var(--lamp-intensity)); filter: drop-shadow(0 0 calc(20px * var(--lamp-intensity)) rgba(255, 179, 71, 0.5)); }
+  12% { opacity: calc(0.98 * var(--lamp-intensity)); }
+  24% { opacity: calc(0.92 * var(--lamp-intensity)); filter: drop-shadow(0 0 calc(16px * var(--lamp-intensity)) rgba(255, 179, 71, 0.4)); }
+  26% { opacity: calc(1 * var(--lamp-intensity)); filter: drop-shadow(0 0 calc(24px * var(--lamp-intensity)) rgba(255, 179, 71, 0.65)); }
+  45% { opacity: calc(0.95 * var(--lamp-intensity)); }
+  72% { opacity: calc(0.99 * var(--lamp-intensity)); filter: drop-shadow(0 0 calc(22px * var(--lamp-intensity)) rgba(255, 179, 71, 0.55)); }
+  85% { opacity: calc(0.93 * var(--lamp-intensity)); }
 }
 
 .flickering-light {
@@ -236,7 +239,7 @@ html, body {
   will-change: opacity, filter;
 }
 
-/* Radio Indicator Light & Backlight Glow Pulse */
+/* Radio Power LED & Backlight Animations */
 @keyframes radioIndicatorPulse {
   0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6)); }
   50% { opacity: 1; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.95)); }
@@ -295,6 +298,13 @@ html, body {
 .modal-scroll::-webkit-scrollbar-thumb:hover {
   background: #d97706;
 }
+
+/* Rotary Knob Position Rotation Helper Classes */
+.knob-rot-0 { transform: rotate(-135deg); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.knob-rot-1 { transform: rotate(-67.5deg); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.knob-rot-2 { transform: rotate(0deg); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.knob-rot-3 { transform: rotate(67.5deg); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.knob-rot-4 { transform: rotate(135deg); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
 /* Responsive Media Queries */
 @media (max-width: 1024px) {

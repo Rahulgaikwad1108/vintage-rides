@@ -1,6 +1,6 @@
-// Unified Ambient Audio Manager for Garage, Rain, and Fan sound channels
+// Comprehensive Audio & Environment Preferences State Manager for Vintage Rides
 
-const STORAGE_KEY = 'vintage_rides_audio_prefs';
+const STORAGE_KEY = 'vintage_rides_all_prefs';
 
 class AmbientAudioManager {
   constructor() {
@@ -25,12 +25,20 @@ class AmbientAudioManager {
 
   loadPrefs() {
     const defaults = {
-      garageVolume: 40,
-      rainVolume: 60,
-      fanVolume: 30,
-      garageEnabled: true,
-      rainEnabled: false,
+      radioEnabled: false,
+      selectedTrack: 0,
+      musicVolume: 75,
+      shuffleEnabled: false,
       fanEnabled: true,
+      fanSpeed: 2,
+      fanVolume: 40,
+      lampEnabled: true,
+      lampBrightness: 3,
+      rainEnabled: false,
+      rainVolume: 60,
+      garageVolume: 35,
+      garageEnabled: true,
+      dayNightMode: 'night',
       isMuted: false
     };
     try {
@@ -47,6 +55,12 @@ class AmbientAudioManager {
     } catch (e) {}
   }
 
+  updatePref(key, value) {
+    this.prefs[key] = value;
+    this.savePrefs();
+    this.syncVolumes();
+  }
+
   initChannel(channel, filePath) {
     if (!this.audioElements[channel]) {
       const audio = new Audio(filePath);
@@ -58,11 +72,19 @@ class AmbientAudioManager {
 
   getEffectiveVolume(channel) {
     if (this.prefs.isMuted) return 0;
-    const vol = this.prefs[`${channel}Volume`] || 0;
-    return (vol / 100);
+
+    let baseVol = (this.prefs[`${channel}Volume`] || 0) / 100;
+
+    // Scale fan audio volume independently based on fan speed level
+    if (channel === 'fan') {
+      if (!this.prefs.fanEnabled || this.prefs.fanSpeed === 0) return 0;
+      const speedMultipliers = [0, 0.25, 0.5, 0.75, 1.0];
+      baseVol *= speedMultipliers[this.prefs.fanSpeed] || 0.5;
+    }
+
+    return Math.max(0, Math.min(1, baseVol));
   }
 
-  // Synthesize soft ambient sound fallback if local mp3 files are absent
   initSynthFallback(channel) {
     if (this.synthContexts[channel]) return;
     try {
@@ -121,7 +143,6 @@ class AmbientAudioManager {
 
     audio.volume = this.getEffectiveVolume(channel);
     audio.play().catch(() => {
-      // Fallback to Web Audio synth if file absent
       this.initSynthFallback(channel);
       if (this.synthGains[channel] && this.synthContexts[channel]) {
         this.synthGains[channel].gain.setValueAtTime(
@@ -188,7 +209,9 @@ class AmbientAudioManager {
 
   startAll() {
     this.playChannel('garage', '/audio/garage.mp3');
-    this.playChannel('fan', '/audio/fan.mp3');
+    if (this.prefs.fanEnabled && this.prefs.fanSpeed > 0) {
+      this.playChannel('fan', '/audio/fan.mp3');
+    }
     if (this.prefs.rainEnabled) {
       this.playChannel('rain', '/audio/rain.mp3');
     }

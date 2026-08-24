@@ -1,16 +1,32 @@
-import React from 'react';
-import { Sun, Moon, CloudRain, Hammer, Wrench, Shield, FileText, Package, Wind } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sun, Moon, CloudRain, Hammer, Wrench, Shield, FileText, Package } from 'lucide-react';
+import FanRegulator from './FanRegulator';
+import LampControl from './LampControl';
+import MusicStatus from './MusicStatus';
 
 export default function GarageObjects({
   isDaytime,
   isRainMode,
-  isFanSpinning = true,
-  onToggleFan,
+  isFanOn,
+  fanSpeed,
+  isLampOn,
+  lampBrightness,
+  playerState,
+  currentTrackTitle,
+  currentTrackIndex,
+  totalTracks,
+  onToggleFanPower,
+  onFanSpeedChange,
+  onToggleLampPower,
+  onLampBrightnessChange,
   onToggleWindow,
   onInspectPosters,
   onInspectTools,
-  onInspectWorkbench
+  onInspectWorkbench,
+  onOpenRadio
 }) {
+  const [fanTooltip, setFanTooltip] = useState(null);
+
   const handleKeyClick = (e, callback) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -18,19 +34,26 @@ export default function GarageObjects({
     }
   };
 
+  const handleFanClick = (e) => {
+    e.stopPropagation();
+    const speedName = isFanOn ? `Speed Level ${fanSpeed}` : 'OFF';
+    setFanTooltip(`Ceiling Fan: ${speedName}`);
+    setTimeout(() => setFanTooltip(null), 2200);
+    // Cycle fan speed on click
+    const nextSpeed = (fanSpeed + 1) % 5;
+    onFanSpeedChange(nextSpeed);
+  };
+
   return (
     <>
-      {/* 1. Interactive Ceiling Fan (Top Center Background) */}
+      {/* 1. Ceiling Fan (Top Center Background) */}
       <div
         tabIndex={0}
         role="button"
-        aria-label={isFanSpinning ? "Ceiling Fan Spinning - Press Enter to toggle fan off" : "Ceiling Fan Stopped - Press Enter to toggle fan on"}
+        aria-label={`Ceiling Fan - Current Speed Level ${isFanOn ? fanSpeed : 0}. Press Enter to change speed.`}
         className="interactive-hover"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleFan();
-        }}
-        onKeyDown={(e) => handleKeyClick(e, onToggleFan)}
+        onClick={handleFanClick}
+        onKeyDown={(e) => handleKeyClick(e, handleFanClick)}
         style={{
           position: 'absolute',
           top: '10px',
@@ -42,10 +65,10 @@ export default function GarageObjects({
           padding: '8px',
           borderRadius: '50%'
         }}
-        title="Click or press Enter to toggle ceiling fan speed"
+        title="Click ceiling fan to cycle speed levels"
       >
         <svg width="260" height="70" viewBox="0 0 260 70" fill="none" stroke="none">
-          <g className={`rotating-fan ${isFanSpinning ? '' : 'fan-paused'}`}>
+          <g className={`rotating-fan ${isFanOn ? `fan-speed-${fanSpeed}` : 'fan-speed-0'}`}>
             {/* Center Motor Hub */}
             <circle cx="130" cy="35" r="18" fill="#3b2b1b" stroke="#8c6a3b" strokeWidth="3" />
             <circle cx="130" cy="35" r="8" fill="#140e08" />
@@ -55,9 +78,85 @@ export default function GarageObjects({
             <path d="M 130 35 L 135 65 C 125 70, 115 65, 120 55 Z" fill="#4d3722" stroke="#261b0f" strokeWidth="2" />
           </g>
         </svg>
+
+        {/* Fan Speed Tooltip Badge */}
+        {fanTooltip && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '75px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(217, 119, 6, 0.95)',
+              color: '#0f0d0b',
+              padding: '4px 12px',
+              borderRadius: '12px',
+              fontWeight: 800,
+              fontSize: '0.75rem',
+              fontFamily: 'JetBrains Mono, monospace',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
+              animation: 'fadeIn 0.2s ease'
+            }}
+          >
+            {fanTooltip}
+          </div>
+        )}
       </div>
 
-      {/* 2. Slatted Garage Window (Top Left Wall) with Rain Effects */}
+      {/* 2. Physical Indian Electrical Fan Speed Regulator (Mid Right Wall) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '28%',
+          right: '18%',
+          zIndex: 8
+        }}
+      >
+        <FanRegulator
+          fanSpeed={fanSpeed}
+          isFanOn={isFanOn}
+          onSpeedChange={onFanSpeedChange}
+          onTogglePower={onToggleFanPower}
+        />
+      </div>
+
+      {/* 3. Physical Lamp Control Switch & Brightness Knob (Mid Left Wall) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '28%',
+          left: '18%',
+          zIndex: 8
+        }}
+      >
+        <LampControl
+          isLampOn={isLampOn}
+          brightness={lampBrightness}
+          onTogglePower={onToggleLampPower}
+          onBrightnessChange={onLampBrightnessChange}
+        />
+      </div>
+
+      {/* 4. Mini Vintage Music Status Badge (Workbench Wall Center) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '25%',
+          left: '26%',
+          zIndex: 14
+        }}
+      >
+        <MusicStatus
+          playerState={playerState}
+          currentTrackTitle={currentTrackTitle}
+          currentTrackIndex={currentTrackIndex}
+          totalTracks={totalTracks}
+          onOpenRadio={onOpenRadio}
+        />
+      </div>
+
+      {/* 5. Slatted Garage Window (Top Left Wall) */}
       <div
         tabIndex={0}
         role="button"
@@ -89,9 +188,7 @@ export default function GarageObjects({
         }}
         title="Click window to toggle Rain Mode & outdoor atmosphere"
       >
-        {/* Slatted Glass Panes & Rain Streaks */}
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          {/* Sky Gradient Overlay */}
           <div
             className="window-ray-anim"
             style={{
@@ -105,7 +202,6 @@ export default function GarageObjects({
             }}
           />
 
-          {/* Animated Water Droplets on Window Glass when Rain Mode is ON */}
           {isRainMode && (
             <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
               {[15, 45, 80, 115, 145].map((xPos, idx) => (
@@ -128,11 +224,9 @@ export default function GarageObjects({
             </div>
           )}
 
-          {/* Window Slats Frame */}
           <svg width="100%" height="100%" viewBox="0 0 180 140" fill="none">
             <rect x="87" y="0" width="6" height="140" fill="#2d2013" />
             <rect x="0" y="67" width="180" height="6" fill="#2d2013" />
-            {/* Celestial Body / Rain Cloud */}
             {isRainMode ? (
               <circle cx="90" cy="35" r="22" fill="#334155" opacity="0.8" style={{ filter: 'drop-shadow(0 0 10px #020617)' }} />
             ) : isDaytime ? (
@@ -142,7 +236,6 @@ export default function GarageObjects({
             )}
           </svg>
 
-          {/* Badge Label */}
           <div
             style={{
               position: 'absolute',
@@ -166,7 +259,7 @@ export default function GarageObjects({
         </div>
       </div>
 
-      {/* 3. Retro Indian Wall Posters (Top Right Wall) */}
+      {/* 6. Retro Indian Wall Posters (Top Right Wall) */}
       <div
         tabIndex={0}
         role="button"
@@ -190,7 +283,6 @@ export default function GarageObjects({
         }}
         title="Click to view nostalgic vintage motorcycle posters"
       >
-        {/* Poster 1: Grand Prix Rally */}
         <div
           style={{
             width: '100px',
@@ -221,7 +313,6 @@ export default function GarageObjects({
           </div>
         </div>
 
-        {/* Poster 2: Maintenance Blueprint */}
         <div
           style={{
             width: '90px',
@@ -248,7 +339,7 @@ export default function GarageObjects({
         </div>
       </div>
 
-      {/* 4. Pegboard & Hanging Toolset (Mid Left Wall) */}
+      {/* 7. Pegboard & Hanging Toolset (Mid Left Wall) */}
       <div
         tabIndex={0}
         role="button"
@@ -275,7 +366,6 @@ export default function GarageObjects({
         }}
         title="Click to inspect workshop toolset"
       >
-        {/* Pegboard Holes Pattern */}
         <div
           style={{
             width: '100%',
@@ -303,7 +393,7 @@ export default function GarageObjects({
         </div>
       </div>
 
-      {/* 5. Storage Shelves (Mid Right Wall) */}
+      {/* 8. Storage Shelves (Mid Right Wall) */}
       <div
         style={{
           position: 'absolute',
@@ -317,7 +407,6 @@ export default function GarageObjects({
           zIndex: 6
         }}
       >
-        {/* Top Shelf */}
         <div style={{ borderBottom: '6px solid #4a3c2c', paddingBottom: '4px', display: 'flex', gap: '8px', alignItems: 'flex-end', justifyContent: 'center' }}>
           <div style={{ width: '28px', height: '36px', backgroundColor: '#dc2626', border: '1px solid #7f1d1d', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Package size={14} style={{ color: '#fef08a' }} />
@@ -326,7 +415,6 @@ export default function GarageObjects({
             <span style={{ fontSize: '0.45rem', fontWeight: 'bold', color: '#fff' }}>OIL</span>
           </div>
         </div>
-        {/* Bottom Shelf */}
         <div style={{ borderBottom: '6px solid #4a3c2c', paddingBottom: '4px', display: 'flex', gap: '6px', alignItems: 'flex-end', justifyContent: 'center' }}>
           <div style={{ width: '45px', height: '24px', backgroundColor: '#1e293b', border: '1px solid #475569', borderRadius: '2px', color: '#f59e0b', fontSize: '0.45rem', textAlign: 'center', lineHeight: '24px' }}>
             SPARK PLUG
@@ -335,7 +423,7 @@ export default function GarageObjects({
         </div>
       </div>
 
-      {/* 6. Heavy Wooden Workbench (Bottom Left/Center Floor) */}
+      {/* 9. Heavy Wooden Workbench (Bottom Left/Center Floor) */}
       <div
         tabIndex={0}
         role="button"
@@ -358,15 +446,11 @@ export default function GarageObjects({
         title="Click to inspect workshop bench"
       >
         <svg width="320" height="110" viewBox="0 0 320 110" fill="none">
-          {/* Top Surface */}
           <path d="M 0 20 L 320 20 L 300 45 L 0 45 Z" fill="#523821" stroke="#261b0f" strokeWidth="2" />
           <path d="M 0 20 L 320 20" stroke="#805934" strokeWidth="3" />
-          {/* Bench Front Face */}
           <rect x="0" y="45" width="300" height="60" fill="#3b2817" stroke="#1f140a" strokeWidth="3" />
-          {/* Leg Support Columns */}
           <rect x="15" y="45" width="25" height="65" fill="#24180d" />
           <rect x="260" y="45" width="25" height="65" fill="#24180d" />
-          {/* Vice Clamp Mounted on Edge */}
           <rect x="10" y="5" width="35" height="20" rx="3" fill="#4b5563" stroke="#1f2937" strokeWidth="2" />
           <circle cx="27" cy="15" r="5" fill="#9ca3af" />
         </svg>

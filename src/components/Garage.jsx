@@ -5,51 +5,38 @@ import GarageObjects from './GarageObjects';
 import Motorcycle from './Motorcycle';
 import Radio from './Radio';
 import RadioPlayer from './RadioPlayer';
+import YouTubePlayer from './YouTubePlayer';
 import InspectModal from './InspectModal';
 import AmbientSoundModal from './AmbientSoundModal';
-import {
-  Zap,
-  Sun,
-  Moon,
-  Sparkles,
-  Radio as RadioIcon,
-  CloudRain,
-  Sliders,
-  Info,
-  Volume2,
-  Music
-} from 'lucide-react';
+import playlist from '../data/playlist';
+import { Zap, Sun, Moon, Sparkles, Radio as RadioIcon, CloudRain, Sliders, Music, Info } from 'lucide-react';
 import { ambientAudio } from '../utils/ambientAudio';
 
-const THEME_STORAGE_KEY = 'vintage_rides_theme_mode';
-const RAIN_PREF_KEY = 'vintage_rides_rain_pref';
-
 export default function Garage() {
-  const [isLightOn, setIsLightOn] = useState(true);
-  const [themeMode, setThemeMode] = useState(() => {
-    try {
-      return localStorage.getItem(THEME_STORAGE_KEY) || 'night';
-    } catch (e) {
-      return 'night';
-    }
-  });
+  // Load saved 12-state preferences from ambientAudio manager & localStorage
+  const [isRadioOn, setIsRadioOn] = useState(ambientAudio.prefs.radioEnabled);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(ambientAudio.prefs.selectedTrack);
+  const [musicVolume, setMusicVolume] = useState(ambientAudio.prefs.musicVolume);
+  const [isShuffle, setIsShuffle] = useState(ambientAudio.prefs.shuffleEnabled);
+  const [playerState, setPlayerState] = useState(ambientAudio.prefs.radioEnabled ? 'loading' : 'stopped');
+  const [isMuted, setIsMuted] = useState(false);
 
-  const isDaytime = themeMode === 'day';
+  const [isFanOn, setIsFanOn] = useState(ambientAudio.prefs.fanEnabled);
+  const [fanSpeed, setFanSpeed] = useState(ambientAudio.prefs.fanSpeed);
 
-  const [isRainMode, setIsRainMode] = useState(() => {
-    try {
-      const saved = localStorage.getItem(RAIN_PREF_KEY);
-      return saved !== null ? JSON.parse(saved) : ambientAudio.prefs.rainEnabled;
-    } catch (e) {
-      return false;
-    }
-  });
+  const [isLampOn, setIsLampOn] = useState(ambientAudio.prefs.lampEnabled);
+  const [lampBrightness, setLampBrightness] = useState(ambientAudio.prefs.lampBrightness);
 
-  const [isFanSpinning, setIsFanSpinning] = useState(ambientAudio.prefs.fanEnabled);
+  const [isRainMode, setIsRainMode] = useState(ambientAudio.prefs.rainEnabled);
+  const [themeMode, setThemeMode] = useState(ambientAudio.prefs.dayNightMode || 'night');
+
+  const [isRadioDeckOpen, setIsRadioDeckOpen] = useState(false);
   const [isAmbienceModalOpen, setIsAmbienceModalOpen] = useState(false);
   const [activeModalItem, setActiveModalItem] = useState(null);
-  const [isRadioOpen, setIsRadioOpen] = useState(false);
   const [toastFeedback, setToastFeedback] = useState(null);
+
+  const isDaytime = themeMode === 'day';
+  const currentTrack = playlist[currentTrackIndex] || playlist[0];
 
   // Initialize Ambient Audio & restored localStorage preferences on mount / user interaction
   useEffect(() => {
@@ -65,74 +52,168 @@ export default function Garage() {
     };
   }, []);
 
-  // Save Day/Night theme preference to localStorage
-  const handleToggleTheme = () => {
-    const nextTheme = themeMode === 'day' ? 'night' : 'day';
-    setThemeMode(nextTheme);
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
-    } catch (e) {}
-    triggerToast(nextTheme === 'day' ? '☀️ Warm Natural Daylight Active' : '🌙 Cozy Night Garage Atmosphere Active');
-  };
-
   // Helper trigger for click feedback toasts
   const triggerToast = (msg) => {
     setToastFeedback(msg);
     setTimeout(() => setToastFeedback(null), 2500);
   };
 
-  const handleToggleLight = () => {
-    setIsLightOn((prev) => {
+  // Radio Power Toggle Handler (Clicking Physical Radio in Garage)
+  const handleToggleRadioPower = () => {
+    setIsRadioOn((prev) => {
       const nextState = !prev;
-      triggerToast(nextState ? 'Tungsten Lamp On — Ambient Glow Active' : 'Tungsten Lamp Off — Dim Garage Mood');
+      ambientAudio.updatePref('radioEnabled', nextState);
+      if (nextState) {
+        setPlayerState('loading');
+        triggerToast('📻 Radio Activated — Background Music Playing');
+      } else {
+        setPlayerState('paused');
+        triggerToast('Radio Powered OFF');
+      }
       return nextState;
     });
   };
 
-  const handleToggleWindow = () => {
+  // Fan Power & Speed Regulator Handlers
+  const handleToggleFanPower = () => {
+    setIsFanOn((prev) => {
+      const nextState = !prev;
+      ambientAudio.updatePref('fanEnabled', nextState);
+      triggerToast(nextState ? `Fan Powered ON (Speed ${fanSpeed})` : 'Fan Powered OFF');
+      return nextState;
+    });
+  };
+
+  const handleFanSpeedChange = (newSpeed) => {
+    setFanSpeed(newSpeed);
+    if (newSpeed > 0 && !isFanOn) {
+      setIsFanOn(true);
+      ambientAudio.updatePref('fanEnabled', true);
+    }
+    ambientAudio.updatePref('fanSpeed', newSpeed);
+    const speedNames = ['OFF', 'LOW (1)', 'MEDIUM (2)', 'HIGH (3)', 'MAX (4)'];
+    triggerToast(`Fan Regulator Set to ${speedNames[newSpeed]}`);
+  };
+
+  // Lamp Power & Brightness Handlers
+  const handleToggleLampPower = () => {
+    setIsLampOn((prev) => {
+      const nextState = !prev;
+      ambientAudio.updatePref('lampEnabled', nextState);
+      triggerToast(nextState ? `Lamp Powered ON (Level ${lampBrightness})` : 'Lamp Powered OFF');
+      return nextState;
+    });
+  };
+
+  const handleLampBrightnessChange = (newLevel) => {
+    setLampBrightness(newLevel);
+    if (!isLampOn) {
+      setIsLampOn(true);
+      ambientAudio.updatePref('lampEnabled', true);
+    }
+    ambientAudio.updatePref('lampBrightness', newLevel);
+    const brightnessNames = ['OFF', 'LOW (1)', 'MEDIUM (2)', 'HIGH (3)'];
+    triggerToast(`Lamp Brightness Set to ${brightnessNames[newLevel]}`);
+  };
+
+  // Rain Mode Toggle Handler
+  const handleToggleRainMode = () => {
     setIsRainMode((prev) => {
       const nextState = !prev;
       ambientAudio.toggleChannel('rain', nextState);
-      try {
-        localStorage.setItem(RAIN_PREF_KEY, JSON.stringify(nextState));
-      } catch (e) {}
+      ambientAudio.updatePref('rainEnabled', nextState);
       triggerToast(nextState ? '🌧️ Rain Mode Active — Window Rain Streaks Outside' : 'Rain Mode Disabled — Clear Window Glass');
       return nextState;
     });
   };
 
-  const handleToggleFan = () => {
-    setIsFanSpinning((prev) => {
+  // Day/Night Theme Toggle Handler
+  const handleToggleTheme = () => {
+    const nextTheme = themeMode === 'day' ? 'night' : 'day';
+    setThemeMode(nextTheme);
+    ambientAudio.updatePref('dayNightMode', nextTheme);
+    triggerToast(nextTheme === 'day' ? '☀️ Warm Natural Daylight Active' : '🌙 Cozy Night Garage Atmosphere Active');
+  };
+
+  // Radio Track Handlers
+  const handleSelectTrack = (index) => {
+    setCurrentTrackIndex(index);
+    ambientAudio.updatePref('selectedTrack', index);
+    setIsRadioOn(true);
+    ambientAudio.updatePref('radioEnabled', true);
+    setPlayerState('loading');
+  };
+
+  const handlePlayPause = () => {
+    if (playerState === 'playing') {
+      setPlayerState('paused');
+    } else {
+      setIsRadioOn(true);
+      ambientAudio.updatePref('radioEnabled', true);
+      setPlayerState('loading');
+    }
+  };
+
+  const handleNextTrack = () => {
+    setPlayerState('loading');
+    if (isShuffle) {
+      let randomIndex = Math.floor(Math.random() * playlist.length);
+      if (randomIndex === currentTrackIndex && playlist.length > 1) {
+        randomIndex = (currentTrackIndex + 1) % playlist.length;
+      }
+      setCurrentTrackIndex(randomIndex);
+      ambientAudio.updatePref('selectedTrack', randomIndex);
+    } else {
+      const nextIdx = (currentTrackIndex + 1) % playlist.length;
+      setCurrentTrackIndex(nextIdx);
+      ambientAudio.updatePref('selectedTrack', nextIdx);
+    }
+  };
+
+  const handlePrevTrack = () => {
+    setPlayerState('loading');
+    const prevIdx = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+    setCurrentTrackIndex(prevIdx);
+    ambientAudio.updatePref('selectedTrack', prevIdx);
+  };
+
+  const handleToggleShuffle = () => {
+    setIsShuffle((prev) => {
       const nextState = !prev;
-      ambientAudio.toggleChannel('fan', nextState);
-      triggerToast(nextState ? 'Ceiling Fan Spinning ON' : 'Ceiling Fan Paused OFF');
+      ambientAudio.updatePref('shuffleEnabled', nextState);
       return nextState;
     });
   };
 
-  const handleToggleRainMode = () => {
-    setIsRainMode((prev) => {
-      const nextState = !prev;
-      ambientAudio.toggleChannel('rain', nextState);
-      try {
-        localStorage.setItem(RAIN_PREF_KEY, JSON.stringify(nextState));
-      } catch (e) {}
-      triggerToast(nextState ? '🌧️ Rain Mode Active — Ambience Audio Started' : 'Rain Mode Disabled — Normal Lighting Restored');
-      return nextState;
-    });
+  const handleVolumeChange = (newVol) => {
+    setMusicVolume(newVol);
+    ambientAudio.updatePref('musicVolume', newVol);
   };
 
-  const handleOpenRadioPlayer = () => {
-    triggerToast('Tuning Airwave 1998 Vintage Radio Player');
-    setIsRadioOpen(true);
+  // YouTube Callbacks
+  const handleYouTubePlay = () => {
+    setPlayerState('playing');
+  };
+
+  const handleYouTubePause = () => {
+    setPlayerState('paused');
+  };
+
+  const handleYouTubeEnd = () => {
+    handleNextTrack();
+  };
+
+  const handleYouTubeError = () => {
+    setPlayerState('error');
+    triggerToast('⚠️ YouTube Track Unavailable — Try another track');
   };
 
   return (
     <div className={`garage-viewport theme-${themeMode} ${isRainMode ? 'rain-mode-active' : ''}`}>
       {/* 1. Atmospheric Dust, Rain Particles & Visual Filters Overlay */}
-      <EnvironmentEffects isLightOn={isLightOn} isDaytime={isDaytime} isRainMode={isRainMode} />
+      <EnvironmentEffects isLightOn={isLampOn} isDaytime={isDaytime} isRainMode={isRainMode} />
 
-      {/* 2. Top Navigation & Floating Control Bar Header */}
+      {/* 2. Top Header Navigation Bar */}
       <header
         className="header-container"
         style={{
@@ -189,20 +270,20 @@ export default function Garage() {
           </div>
         </div>
 
-        {/* Floating Desktop & Responsive Master Control System */}
+        {/* Floating Master Control System */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
           
-          {/* 🎵 / 📻 Radio & Music Player Control */}
+          {/* Radio Deck Launcher */}
           <button
-            onClick={handleOpenRadioPlayer}
-            aria-label="Open Radio Music Player"
+            onClick={() => setIsRadioDeckOpen(true)}
+            aria-label="Open Radio Player Deck"
             className="interactive-hover"
             style={{
-              backgroundColor: 'rgba(217, 119, 6, 0.22)',
-              border: '1px solid #d97706',
+              backgroundColor: isRadioOn ? 'rgba(34, 197, 94, 0.22)' : 'rgba(217, 119, 6, 0.22)',
+              border: `1px solid ${isRadioOn ? '#22c55e' : '#d97706'}`,
               borderRadius: '20px',
               padding: '6px 14px',
-              color: '#fbbf24',
+              color: isRadioOn ? '#86efac' : '#fbbf24',
               fontSize: '0.8rem',
               fontFamily: 'JetBrains Mono, monospace',
               display: 'flex',
@@ -211,13 +292,13 @@ export default function Garage() {
               cursor: 'pointer',
               backdropFilter: 'blur(8px)'
             }}
-            title="🎵 Open Radio & YouTube Music Player"
+            title="🎵 Open Radio & YouTube Music Deck"
           >
             <Music size={14} />
-            <span>Radio</span>
+            <span>{isRadioOn ? 'Radio Deck ●' : 'Radio Deck'}</span>
           </button>
 
-          {/* 🌧️ Rain Mode Toggle Control */}
+          {/* Rain Mode Toggle */}
           <button
             onClick={handleToggleRainMode}
             aria-label={isRainMode ? "Disable Rain Mode" : "Enable Rain Mode"}
@@ -237,13 +318,13 @@ export default function Garage() {
               backdropFilter: 'blur(8px)',
               boxShadow: isRainMode ? '0 0 15px rgba(56, 189, 248, 0.3)' : 'none'
             }}
-            title="🌧️ Toggle Rain Mode & Atmospheric Audio"
+            title="🌧️ Toggle Rain Mode & Ambient Audio"
           >
             <CloudRain size={14} />
             <span>{isRainMode ? 'Rain ON' : 'Rain OFF'}</span>
           </button>
 
-          {/* 🔊 Ambient Sound Control Deck */}
+          {/* Ambient Sound Deck */}
           <button
             onClick={() => setIsAmbienceModalOpen(true)}
             aria-label="Configure Sound Volumes"
@@ -268,7 +349,7 @@ export default function Garage() {
             <span>Ambience</span>
           </button>
 
-          {/* 🌙 / ☀️ Day & Night Atmosphere Toggle */}
+          {/* Day / Night Theme Toggle */}
           <button
             onClick={handleToggleTheme}
             aria-label={isDaytime ? "Switch to Night Atmosphere" : "Switch to Day Atmosphere"}
@@ -294,7 +375,7 @@ export default function Garage() {
             <span>{isDaytime ? 'Day' : 'Night'}</span>
           </button>
 
-          {/* ℹ️ Garage Info & Specs Button */}
+          {/* Garage Info & Specs Button */}
           <button
             onClick={() => setActiveModalItem('workbench')}
             aria-label="Garage Information and Specs"
@@ -322,8 +403,9 @@ export default function Garage() {
 
       {/* 3. Hanging Light Fixture & Pull Chain */}
       <Lighting
-        isLightOn={isLightOn}
-        onToggleLight={handleToggleLight}
+        isLightOn={isLampOn}
+        brightness={lampBrightness}
+        onToggleLight={handleToggleLampPower}
         onInspectLight={() => setActiveModalItem('lamp')}
       />
 
@@ -331,9 +413,19 @@ export default function Garage() {
       <GarageObjects
         isDaytime={isDaytime}
         isRainMode={isRainMode}
-        isFanSpinning={isFanSpinning}
-        onToggleFan={handleToggleFan}
-        onToggleWindow={handleToggleWindow}
+        isFanOn={isFanOn}
+        fanSpeed={fanSpeed}
+        isLampOn={isLampOn}
+        lampBrightness={lampBrightness}
+        playerState={isRadioOn ? playerState : 'stopped'}
+        currentTrackTitle={currentTrack.title}
+        currentTrackIndex={currentTrackIndex}
+        totalTracks={playlist.length}
+        onToggleFanPower={handleToggleFanPower}
+        onFanSpeedChange={handleFanSpeedChange}
+        onToggleLampPower={handleToggleLampPower}
+        onLampBrightnessChange={handleLampBrightnessChange}
+        onToggleWindow={handleToggleRainMode}
         onInspectPosters={() => {
           triggerToast('Inspecting Vintage Rallies Poster');
           setActiveModalItem('posters');
@@ -346,6 +438,7 @@ export default function Garage() {
           triggerToast('Inspecting Hardwood Workbench');
           setActiveModalItem('workbench');
         }}
+        onOpenRadio={() => setIsRadioDeckOpen(true)}
       />
 
       {/* 5. Centerpiece: Retro Motorcycle (Focal Point) */}
@@ -369,7 +462,7 @@ export default function Garage() {
         />
       </div>
 
-      {/* 6. Workbench Object: Vintage Valve Radio */}
+      {/* 6. Workbench Object: Vintage Tabletop Valve Radio */}
       <div
         style={{
           position: 'absolute',
@@ -379,12 +472,42 @@ export default function Garage() {
         }}
       >
         <Radio
-          activeFrequency="104.2 FM"
-          onInspectRadio={handleOpenRadioPlayer}
+          isRadioOn={isRadioOn}
+          playerState={playerState}
+          currentTrackTitle={currentTrack.title}
+          activeFrequency="98.3 FM"
+          onToggleRadioPower={handleToggleRadioPower}
+          onOpenDeck={() => setIsRadioDeckOpen(true)}
         />
       </div>
 
-      {/* 7. Bottom Compact Helper Bar */}
+      {/* 7. Visually Minimized Embedded YouTube Player Container */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10px',
+          right: '10px',
+          width: '180px',
+          height: '100px',
+          zIndex: 2,
+          opacity: 0.05,
+          pointerEvents: 'none',
+          overflow: 'hidden'
+        }}
+      >
+        <YouTubePlayer
+          youtubeId={currentTrack.youtubeId}
+          isPlaying={isRadioOn && (playerState === 'playing' || playerState === 'loading')}
+          volume={musicVolume}
+          isMuted={isMuted}
+          onPlay={handleYouTubePlay}
+          onPause={handleYouTubePause}
+          onEnd={handleYouTubeEnd}
+          onError={handleYouTubeError}
+        />
+      </div>
+
+      {/* 8. Bottom Compact Helper Bar */}
       <div
         className="helper-bar"
         style={{
@@ -407,10 +530,10 @@ export default function Garage() {
         }}
       >
         <Sparkles size={14} style={{ color: '#f59e0b' }} />
-        <span>Click <strong>Motorcycle</strong>, <strong>Radio</strong>, <strong>Window</strong>, or <strong>Controls</strong> above to interact</span>
+        <span>Click <strong>Radio</strong> to toggle power, or use <strong>Fan Regulator</strong> & <strong>Lamp Switches</strong> on the wall</span>
       </div>
 
-      {/* 8. Toast Feedback Message */}
+      {/* 9. Toast Feedback Message */}
       {toastFeedback && (
         <div
           style={{
@@ -434,18 +557,32 @@ export default function Garage() {
         </div>
       )}
 
-      {/* 9. Interactive Details Modal */}
+      {/* 10. Interactive Details Modal */}
       <InspectModal
         activeItem={activeModalItem}
         onClose={() => setActiveModalItem(null)}
       />
 
-      {/* 10. Vintage Radio Player Deck Modal */}
-      {isRadioOpen && (
-        <RadioPlayer onClose={() => setIsRadioOpen(false)} />
+      {/* 11. Expandable Vintage Radio Player Deck */}
+      {isRadioDeckOpen && (
+        <RadioPlayer
+          currentTrackIndex={currentTrackIndex}
+          playerState={isRadioOn ? playerState : 'stopped'}
+          isShuffle={isShuffle}
+          volume={musicVolume}
+          isMuted={isMuted}
+          onSelectTrack={handleSelectTrack}
+          onPlayPause={handlePlayPause}
+          onNext={handleNextTrack}
+          onPrevious={handlePrevTrack}
+          onToggleShuffle={handleToggleShuffle}
+          onVolumeChange={handleVolumeChange}
+          onToggleMute={() => setIsMuted((prev) => !prev)}
+          onClose={() => setIsRadioDeckOpen(false)}
+        />
       )}
 
-      {/* 11. Ambient Sound Control Deck Modal */}
+      {/* 12. Ambient Sound Control Deck Modal */}
       {isAmbienceModalOpen && (
         <AmbientSoundModal
           onClose={() => setIsAmbienceModalOpen(false)}
