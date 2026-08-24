@@ -1,36 +1,327 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg-dark: #0f0d0b;
-  --bg-card: #181512;
-  --text-main: #f0eae1;
-  --text-muted: #9c9285;
+  --bg-dark: #0b0907;
+  --bg-wall: #1a1510;
+  --bg-floor: #14100c;
+  --bg-card: #1f1a14;
+  
+  --text-primary: #f5eedc;
+  --text-muted: #a39580;
+  --text-dark: #635747;
+
   --accent-amber: #d97706;
   --accent-gold: #f59e0b;
   --accent-copper: #b45309;
-  --border-muted: #2d261e;
+  --accent-rust: #994d3a;
+  --accent-tungsten: #ffb347;
+
+  --border-muted: #362d22;
+  --border-glow: rgba(245, 158, 11, 0.4);
+
   --font-serif: 'Cinzel', serif;
   --font-sans: 'Plus Jakarta Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  --shadow-warm: 0 10px 30px rgba(0, 0, 0, 0.7);
+  --glow-amber: 0 0 20px rgba(245, 158, 11, 0.35);
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  user-select: none;
 }
 
-body {
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   background-color: var(--bg-dark);
-  color: var(--text-main);
+  color: var(--text-primary);
   font-family: var(--font-sans);
-  line-height: 1.6;
-  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
 #root {
-  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Garage Main Viewport Frame */
+.garage-viewport {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.8s cubic-bezier(0.25, 1, 0.5, 1), filter 0.8s ease;
+}
+
+/* Theme 1: Night Mode (Default Cozy Retro Garage) */
+.garage-viewport.theme-night {
+  background: radial-gradient(circle at 50% 40%, #1f1811 0%, #0d0b08 70%, #050403 100%);
+}
+
+/* Theme 2: Day Mode (Warm Natural Sunlight Garage) */
+.garage-viewport.theme-day {
+  background: radial-gradient(circle at 50% 35%, #3b2c1d 0%, #241b12 65%, #140e09 100%);
+}
+
+.garage-viewport.rain-mode-active {
+  background: radial-gradient(circle at 50% 40%, #111726 0%, #080b14 70%, #030408 100%) !important;
+}
+
+/* 1. Animated Subtle Film Grain Overlay */
+.film-grain {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 25;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  animation: grainNoise 0.8s steps(4) infinite;
+  will-change: transform;
+}
+
+@keyframes grainNoise {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 3%); }
+  50% { transform: translate(3%, -1%); }
+  75% { transform: translate(-1%, -3%); }
+  100% { transform: translate(2%, 1%); }
+}
+
+/* 2. Soft Dark Vignette Overlay */
+.vignette-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 24;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(5, 4, 3, 0.75) 85%, rgba(0, 0, 0, 0.95) 100%);
+  transition: opacity 0.8s ease;
+}
+
+.theme-day .vignette-overlay {
+  opacity: 0.45;
+}
+
+/* Rain Atmospheric Visual Overlay */
+.rain-dark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 22;
+  background: radial-gradient(ellipse at center, rgba(14, 23, 42, 0.25) 0%, rgba(3, 7, 18, 0.5) 100%);
+  transition: opacity 0.8s ease;
+}
+
+/* 3. Atmospheric Dust & Rain Canvas */
+.dust-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Interactive Element Common Hover Glow & Click Animation */
+.interactive-hover {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s ease, outline 0.2s ease;
+  will-change: transform, filter;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.interactive-hover:hover {
+  filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.75));
+  transform: translateY(-2px);
+}
+
+.interactive-hover:active {
+  transform: scale(0.96) translateY(0);
+}
+
+.interactive-hover:focus-visible {
+  outline: 2px solid #f59e0b !important;
+  outline-offset: 4px !important;
+  border-radius: 6px;
+}
+
+/* Keyframe Animations */
+
+/* 4. Ceiling Fan Spin */
+@keyframes fanSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.rotating-fan {
+  transform-origin: center center;
+  animation: fanSpin 8s linear infinite;
+  will-change: transform;
+}
+
+.fan-paused {
+  animation-play-state: paused !important;
+}
+
+/* Pendant Lamp Gentle Sway */
+@keyframes lampSway {
+  0% { transform: rotate(-1.2deg); }
+  50% { transform: rotate(1.2deg); }
+  100% { transform: rotate(-1.2deg); }
+}
+
+.swaying-lamp {
+  transform-origin: top center;
+  animation: lampSway 9s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Realistic Subtle Light Bulb Flicker */
+@keyframes lightFlicker {
+  0%, 100% { opacity: 0.96; filter: drop-shadow(0 0 20px rgba(255, 179, 71, 0.5)); }
+  12% { opacity: 0.98; }
+  24% { opacity: 0.92; filter: drop-shadow(0 0 16px rgba(255, 179, 71, 0.4)); }
+  26% { opacity: 1; filter: drop-shadow(0 0 24px rgba(255, 179, 71, 0.65)); }
+  45% { opacity: 0.95; }
+  72% { opacity: 0.99; filter: drop-shadow(0 0 22px rgba(255, 179, 71, 0.55)); }
+  85% { opacity: 0.93; }
+}
+
+.flickering-light {
+  animation: lightFlicker 6s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+
+/* Motorcycle Idle Vibration & Breathing */
+@keyframes motorcycleIdle {
+  0% { transform: translateY(0px); }
+  35% { transform: translateY(-1.2px); }
+  70% { transform: translateY(0.8px); }
+  100% { transform: translateY(0px); }
+}
+
+.motorcycle-idle-anim {
+  animation: motorcycleIdle 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Motorcycle Headlight Subtle Glow Pulse */
+@keyframes headlightPulse {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.8)); }
+}
+
+.headlight-pulse-anim {
+  animation: headlightPulse 3.5s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+
+/* Radio Indicator Light & Backlight Glow Pulse */
+@keyframes radioIndicatorPulse {
+  0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.95)); }
+}
+
+.radio-indicator-glow {
+  animation: radioIndicatorPulse 2.5s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+
+@keyframes radioDialBacklight {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 0.95; }
+}
+
+.radio-dial-anim {
+  animation: radioDialBacklight 4s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* Rain Droplet Glass Streak Animation */
+@keyframes rainStreakSlide {
+  0% { transform: translateY(-100%); opacity: 0.2; }
+  50% { opacity: 0.7; }
+  100% { transform: translateY(180%); opacity: 0.1; }
+}
+
+.rain-streak {
+  animation: rainStreakSlide 1.8s linear infinite;
+  will-change: transform, opacity;
+}
+
+/* Distant Lightning Flash Pulse */
+@keyframes distantLightning {
+  0%, 94%, 98%, 100% { opacity: 0; }
+  95% { opacity: 0.15; }
+  97% { opacity: 0.25; }
+}
+
+.lightning-flash-anim {
+  animation: distantLightning 12s ease infinite;
+  will-change: opacity;
+}
+
+/* Custom Scrollbar for Modal */
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-scroll::-webkit-scrollbar-track {
+  background: #14100c;
+}
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: #382d20;
+  border-radius: 3px;
+}
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #d97706;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1024px) {
+  .header-title {
+    font-size: 1.1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0.8rem 1rem !important;
+  }
+  .header-title {
+    font-size: 1rem !important;
+  }
+  .helper-bar {
+    font-size: 0.7rem !important;
+    padding: 6px 12px !important;
+    bottom: 0.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-brand-desc {
+    display: none;
+  }
+  .helper-bar {
+    display: none !important;
+  }
 }
