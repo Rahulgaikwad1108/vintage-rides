@@ -1,9 +1,9 @@
 import React from 'react';
-import { Radio as RadioIcon, Music, AlertCircle } from 'lucide-react';
+import { Radio as RadioIcon } from 'lucide-react';
 
 export default function MusicStatus({
   playerState = 'stopped',
-  currentTrackTitle = 'Track 01',
+  currentTrack = { title: 'Tum Hi Ho', artist: 'Arijit Singh' },
   currentTrackIndex = 0,
   totalTracks = 14,
   onOpenRadio
@@ -31,14 +31,14 @@ export default function MusicStatus({
     <div
       tabIndex={0}
       role="button"
-      aria-label={`Mini Radio Status Indicator - ${status.text} ${currentTrackTitle}`}
+      aria-label={`Mini Radio Status Indicator - ${status.text} ${currentTrack?.title || ''}`}
       onClick={(e) => {
         e.stopPropagation();
         if (onOpenRadio) onOpenRadio();
       }}
       className="interactive-hover"
       style={{
-        backgroundColor: 'rgba(18, 14, 10, 0.92)',
+        backgroundColor: 'rgba(18, 14, 10, 0.94)',
         border: `1px solid ${playerState === 'playing' ? '#f59e0b' : '#3d3226'}`,
         borderRadius: '12px',
         padding: '8px 14px',
@@ -46,17 +46,18 @@ export default function MusicStatus({
         alignItems: 'center',
         gap: '10px',
         color: '#f5eedc',
-        boxShadow: playerState === 'playing' ? '0 0 15px rgba(245, 158, 11, 0.25)' : '0 4px 12px rgba(0,0,0,0.6)',
+        boxShadow: playerState === 'playing' ? '0 0 16px rgba(245, 158, 11, 0.3)' : '0 4px 12px rgba(0,0,0,0.6)',
         backdropFilter: 'blur(8px)',
         userSelect: 'none',
-        maxWidth: '260px'
+        maxWidth: '280px',
+        width: '100%'
       }}
       title="Click to open full Radio Deck"
     >
-      <RadioIcon size={18} style={{ color: status.color, filter: playerState === 'playing' ? 'drop-shadow(0 0 4px #22c55e)' : 'none' }} />
+      <RadioIcon size={20} style={{ color: status.color, filter: playerState === 'playing' ? 'drop-shadow(0 0 5px #22c55e)' : 'none', flexShrink: 0 }} />
       
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
           <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', color: status.color, fontWeight: 700 }}>
             {status.dot} FM 98.3
           </span>
@@ -64,19 +65,48 @@ export default function MusicStatus({
             {formattedIndex}
           </span>
         </div>
-        <div
-          style={{
-            fontSize: '0.8rem',
-            fontFamily: 'Cinzel, serif',
-            fontWeight: 700,
-            color: '#f5eedc',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
-          {playerState === 'playing' ? currentTrackTitle : status.text}
-        </div>
+
+        {playerState === 'playing' ? (
+          <>
+            <div
+              style={{
+                fontSize: '0.825rem',
+                fontFamily: 'Cinzel, serif',
+                fontWeight: 700,
+                color: '#f5eedc',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: 1.2
+              }}
+            >
+              {currentTrack.title}
+            </div>
+            <div
+              style={{
+                fontSize: '0.7rem',
+                color: '#d97706',
+                fontFamily: 'Plus Jakarta Sans, sans-serif',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
+              {currentTrack.artist}
+            </div>
+          </>
+        ) : (
+          <div
+            style={{
+              fontSize: '0.8rem',
+              fontFamily: 'Cinzel, serif',
+              fontWeight: 700,
+              color: status.color
+            }}
+          >
+            {status.text}
+          </div>
+        )}
       </div>
     </div>
   );

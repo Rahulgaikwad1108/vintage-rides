@@ -56,9 +56,9 @@ export default function RadioPlayer({
       case 'paused':
         return { text: 'Ⅱ PAUSED', color: '#f59e0b' };
       case 'loading':
-        return { text: 'LOADING...', color: '#fbbf24' };
+        return { text: 'TUNING...', color: '#fbbf24' };
       case 'error':
-        return { text: 'PLAYBACK ERROR', color: '#ef4444' };
+        return { text: 'SIGNAL LOST', color: '#ef4444' };
       case 'stopped':
       default:
         return { text: 'STANDBY', color: '#a39580' };
@@ -177,10 +177,10 @@ export default function RadioPlayer({
             </span>
           </div>
 
-          <div style={{ fontSize: '1.15rem', fontWeight: 900, fontFamily: 'Cinzel, serif', color: '#f5eedc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: '1.2rem', fontWeight: 900, fontFamily: 'Cinzel, serif', color: '#f5eedc', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '2px' }}>
             {currentTrack.title}
           </div>
-          <div style={{ fontSize: '0.8rem', color: '#d97706', fontFamily: 'sans-serif' }}>
+          <div style={{ fontSize: '0.85rem', color: '#d97706', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
             {currentTrack.artist}
           </div>
         </div>
@@ -198,14 +198,14 @@ export default function RadioPlayer({
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', color: '#b88947' }}>
             <ListMusic size={14} />
             <span style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono, monospace', fontWeight: 700 }}>
-              PLAYLIST (14 TRACKS)
+              VINTAGE CLASSICS PLAYLIST (14 TRACKS)
             </span>
           </div>
 
           <div
             className="modal-scroll"
             style={{
-              maxHeight: '140px',
+              maxHeight: '160px',
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
@@ -224,7 +224,7 @@ export default function RadioPlayer({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '5px 8px',
+                    padding: '6px 10px',
                     borderRadius: '6px',
                     backgroundColor: isSelected ? 'rgba(217, 119, 6, 0.25)' : '#1f150d',
                     border: `1px solid ${isSelected ? '#d97706' : '#332314'}`,
@@ -234,15 +234,15 @@ export default function RadioPlayer({
                     fontFamily: 'JetBrains Mono, monospace'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: isSelected ? '#ef4444' : '#6b7280', width: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden', marginRight: '8px' }}>
+                    <span style={{ color: isSelected ? '#ef4444' : '#6b7280', flexShrink: 0 }}>
                       {isSelected ? '●' : ' '}
                     </span>
-                    <span style={{ fontWeight: isSelected ? 700 : 500, color: isSelected ? '#f5eedc' : '#d1c7b7' }}>
-                      {track.title}
+                    <span style={{ fontWeight: isSelected ? 700 : 500, color: isSelected ? '#f5eedc' : '#d1c7b7', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {track.title} <span style={{ color: isSelected ? '#f59e0b' : '#6b5a47', fontWeight: 400 }}>— {track.artist}</span>
                     </span>
                   </div>
-                  <span style={{ fontSize: '0.65rem', color: isSelected ? '#f59e0b' : '#6b5a47' }}>
+                  <span style={{ fontSize: '0.65rem', color: isSelected ? '#f59e0b' : '#6b5a47', flexShrink: 0 }}>
                     {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
                   </span>
                 </div>

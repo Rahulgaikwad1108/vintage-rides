@@ -1,86 +1,86 @@
 const playlist = [
   {
     id: "song-01",
-    title: "Track 01",
-    artist: "YouTube",
+    title: "Tum Hi Ho",
+    artist: "Arijit Singh",
     youtubeId: "x96TFHoI86g"
   },
   {
     id: "song-02",
-    title: "Track 02",
-    artist: "YouTube",
+    title: "Yeh Shaam Mastani",
+    artist: "Kishore Kumar",
     youtubeId: "CM5oSuScYS4"
   },
   {
     id: "song-03",
-    title: "Track 03",
-    artist: "YouTube",
+    title: "Chura Liya Hai Tumne Jo Dil Ko",
+    artist: "Asha Bhosle & Mohammad Rafi",
     youtubeId: "0WziMtAB2hE"
   },
   {
     id: "song-04",
-    title: "Track 04",
-    artist: "YouTube",
+    title: "Lag Ja Gale Se Phir",
+    artist: "Lata Mangeshkar",
     youtubeId: "oDfK3RfSlKk"
   },
   {
     id: "song-05",
-    title: "Track 05",
-    artist: "YouTube",
+    title: "Pal Pal Dil Ke Paas",
+    artist: "Kishore Kumar",
     youtubeId: "g-sVznH5FEk"
   },
   {
     id: "song-06",
-    title: "Track 06",
-    artist: "YouTube",
+    title: "Roop Tera Mastana",
+    artist: "Kishore Kumar",
     youtubeId: "QwLQ4_gkvsE"
   },
   {
     id: "song-07",
-    title: "Track 07",
-    artist: "YouTube",
+    title: "Gulabi Aankhen Jo Teri Dekhi",
+    artist: "Mohammed Rafi",
     youtubeId: "kxT-5glSScc"
   },
   {
     id: "song-08",
-    title: "Track 08",
-    artist: "YouTube",
+    title: "Mere Sapno Ki Rani",
+    artist: "Kishore Kumar",
     youtubeId: "uKQ99gs6B4w"
   },
   {
     id: "song-09",
-    title: "Track 09",
-    artist: "YouTube",
+    title: "Pyar Deewana Hota Hai",
+    artist: "Kishore Kumar",
     youtubeId: "qKpnmFiCTSY"
   },
   {
     id: "song-10",
-    title: "Track 10",
-    artist: "YouTube",
+    title: "O Mere Dil Ke Chain",
+    artist: "Kishore Kumar",
     youtubeId: "1B7zGfBHdg0"
   },
   {
     id: "song-11",
-    title: "Track 11",
-    artist: "YouTube",
+    title: "Kabira",
+    artist: "Arijit Singh & Harshdeep Kaur",
     youtubeId: "6T3y1JcWRbM"
   },
   {
     id: "song-12",
-    title: "Track 12",
-    artist: "YouTube",
+    title: "Tere Bina Zindagi Se",
+    artist: "Lata Mangeshkar & Kishore Kumar",
     youtubeId: "CakDDkF-Qv4"
   },
   {
     id: "song-13",
-    title: "Track 13",
-    artist: "YouTube",
+    title: "Ek Ajnabee Haseena Se",
+    artist: "Kishore Kumar",
     youtubeId: "aYIq2efHS94"
   },
   {
     id: "song-14",
-    title: "Track 14",
-    artist: "YouTube",
+    title: "Sujan Singh Vintage Rides Classic",
+    artist: "Retro Classics",
     youtubeId: "Xbnj55AUtXE"
   }
 ];

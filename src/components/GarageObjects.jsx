@@ -12,7 +12,7 @@ export default function GarageObjects({
   isLampOn,
   lampBrightness,
   playerState,
-  currentTrackTitle,
+  currentTrack,
   currentTrackIndex,
   totalTracks,
   onToggleFanPower,
@@ -104,12 +104,12 @@ export default function GarageObjects({
         )}
       </div>
 
-      {/* 2. Physical Indian Electrical Fan Speed Regulator (Mid Right Wall) */}
+      {/* 2. Physical Indian Electrical Fan Speed Regulator (Mounted near Ceiling Fan Wiring) */}
       <div
         style={{
           position: 'absolute',
-          top: '28%',
-          right: '18%',
+          top: '16%',
+          right: '24%',
           zIndex: 8
         }}
       >
@@ -121,12 +121,12 @@ export default function GarageObjects({
         />
       </div>
 
-      {/* 3. Physical Lamp Control Switch & Brightness Knob (Mid Left Wall) */}
+      {/* 3. Physical Lamp Control Switch & Brightness Knob (Mounted near Lamp Wiring) */}
       <div
         style={{
           position: 'absolute',
-          top: '28%',
-          left: '18%',
+          top: '16%',
+          left: '24%',
           zIndex: 8
         }}
       >
@@ -149,7 +149,7 @@ export default function GarageObjects({
       >
         <MusicStatus
           playerState={playerState}
-          currentTrackTitle={currentTrackTitle}
+          currentTrack={currentTrack}
           currentTrackIndex={currentTrackIndex}
           totalTracks={totalTracks}
           onOpenRadio={onOpenRadio}

@@ -18,7 +18,7 @@ export default function Motorcycle({ onInspectMotorcycle }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleClick();
+      handleClick(e);
     }
   };
 

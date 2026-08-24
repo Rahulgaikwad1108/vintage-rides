@@ -1,5 +1,4 @@
-import React from 'react';
-import { Zap, SunMedium } from 'lucide-react';
+import React, { useState } from 'react';
 
 export default function LampControl({
   isLampOn = true,
@@ -7,8 +6,15 @@ export default function LampControl({
   onTogglePower,
   onBrightnessChange
 }) {
+  const [tooltip, setTooltip] = useState(null);
+
   const brightnessLabels = ['OFF', '1 LOW', '2 MED', '3 HIGH'];
   const effectiveLevel = isLampOn ? brightness : 0;
+
+  const showTemporaryTooltip = (text) => {
+    setTooltip(text);
+    setTimeout(() => setTooltip(null), 1800);
+  };
 
   const handleKnobClick = (e) => {
     e.stopPropagation();
@@ -16,6 +22,15 @@ export default function LampControl({
     if (onBrightnessChange) {
       onBrightnessChange(nextLevel);
     }
+    showTemporaryTooltip(`Lamp Brightness: ${brightnessLabels[nextLevel]}`);
+  };
+
+  const handleToggleClick = (e) => {
+    e.stopPropagation();
+    if (onTogglePower) {
+      onTogglePower();
+    }
+    showTemporaryTooltip(`Lamp Power: ${!isLampOn ? 'ON' : 'OFF'}`);
   };
 
   const handleKeyDown = (e) => {
@@ -27,146 +42,157 @@ export default function LampControl({
 
   return (
     <div
-      tabIndex={0}
-      role="region"
-      aria-label={`Vintage Lamp Wall Switch Control - Power ${isLampOn ? 'ON' : 'OFF'}, Brightness Level ${effectiveLevel}`}
-      className="interactive-hover"
-      onClick={(e) => e.stopPropagation()}
       style={{
-        backgroundColor: '#261e16',
-        border: '3px solid #4a3826',
-        borderRadius: '10px',
-        padding: '10px 14px',
-        display: 'flex',
-        flexDirection: 'column',
+        position: 'relative',
+        display: 'inline-flex',
         alignItems: 'center',
-        boxShadow: '0 8px 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,0.6)',
-        width: '135px',
-        userSelect: 'none'
+        justifyContent: 'center',
+        padding: '6px'
       }}
-      title="Vintage Lamp Wall Switch & Brightness Control"
     >
-      {/* Box Header Label */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px', borderBottom: '1px solid #3d2d1e', width: '100%', justifyContent: 'center', paddingBottom: '4px' }}>
-        <Zap size={13} style={{ color: isLampOn ? '#fbbf24' : '#8c7d6b' }} />
-        <span style={{ fontSize: '0.65rem', fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, color: '#f5eedc', letterSpacing: '0.5px' }}>
-          LAMP CONTROL
-        </span>
-      </div>
-
-      {/* Rotary Brightness Knob */}
+      {/* Wall Bakelite Dimmer & Power Switch Plate */}
       <div
         tabIndex={0}
-        role="slider"
-        aria-valuemin={0}
-        aria-valuemax={3}
-        aria-valuenow={effectiveLevel}
-        aria-label={`Lamp Brightness Knob - Level ${effectiveLevel}`}
-        onClick={handleKnobClick}
-        onKeyDown={handleKeyDown}
+        role="region"
+        aria-label={`Lamp Wall Switch - Power ${isLampOn ? 'ON' : 'OFF'}, Brightness Level ${effectiveLevel}`}
         className="interactive-hover"
+        onClick={handleKnobClick}
+        onMouseEnter={() => showTemporaryTooltip(`Lamp Brightness: ${brightnessLabels[effectiveLevel]}`)}
         style={{
-          position: 'relative',
-          width: '60px',
-          height: '60px',
-          borderRadius: '50%',
-          backgroundColor: '#19120b',
-          border: '3px solid #b88339',
+          backgroundColor: '#1c1611',
+          border: '2px solid #3b2c1d',
+          borderRadius: '6px',
+          padding: '6px 8px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.9)',
+          gap: '8px',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.8), inset 0 0 4px rgba(0,0,0,0.7)',
           cursor: 'pointer',
-          marginBottom: '8px'
+          userSelect: 'none'
         }}
+        title="Click knob to cycle brightness (1 LOW → 2 MED → 3 HIGH)"
       >
-        {/* Brightness Marker Indicators */}
-        {[1, 2, 3].map((lvl) => {
-          const angles = [-60, 0, 60];
-          const rad = (angles[lvl - 1] * Math.PI) / 180;
-          const rx = 22 * Math.sin(rad);
-          const ry = -22 * Math.cos(rad);
-          const isActive = isLampOn && brightness >= lvl;
-          return (
-            <div
-              key={lvl}
-              style={{
-                position: 'absolute',
-                top: `calc(50% + ${ry}px - 3.5px)`,
-                left: `calc(50% + ${rx}px - 3.5px)`,
-                width: '7px',
-                height: '7px',
-                borderRadius: '50%',
-                backgroundColor: isActive ? '#fbbf24' : '#4a3826',
-                boxShadow: isActive ? '0 0 6px #fbbf24' : 'none'
-              }}
-            />
-          );
-        })}
-
-        {/* Inner Bakelite Knob Center Pointer */}
+        {/* Small Physical Power Toggle Switch */}
         <div
-          className={`knob-rot-${effectiveLevel}`}
+          tabIndex={0}
+          role="switch"
+          aria-checked={isLampOn}
+          aria-label={isLampOn ? "Turn Lamp Power OFF" : "Turn Lamp Power ON"}
+          onClick={handleToggleClick}
+          className="interactive-hover"
           style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '50%',
-            backgroundColor: '#38291a',
-            border: '2px solid #523b24',
-            position: 'relative',
+            width: '18px',
+            height: '32px',
+            backgroundColor: '#120d08',
+            border: '1px solid #3d2d1e',
+            borderRadius: '4px',
+            padding: '2px',
             display: 'flex',
+            flexDirection: 'column',
+            justifyContent: isLampOn ? 'flex-start' : 'flex-end',
             alignItems: 'center',
-            justifyContent: 'center'
+            cursor: 'pointer',
+            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.8)'
           }}
+          title={isLampOn ? 'Lamp Power ON (Click to turn OFF)' : 'Lamp Power OFF (Click to turn ON)'}
         >
-          {/* Yellow Pointer Line */}
+          {/* Switch Toggle Knob */}
           <div
             style={{
-              position: 'absolute',
-              top: '3px',
-              width: '3px',
-              height: '12px',
-              backgroundColor: isLampOn ? '#fbbf24' : '#6b7280',
-              borderRadius: '2px'
+              width: '12px',
+              height: '14px',
+              borderRadius: '2px',
+              backgroundColor: isLampOn ? '#f59e0b' : '#4b5563',
+              border: `1px solid ${isLampOn ? '#d97706' : '#1f2937'}`,
+              boxShadow: isLampOn ? '0 0 6px rgba(245, 158, 11, 0.6)' : 'none',
+              transition: 'all 0.2s ease'
             }}
           />
         </div>
+
+        {/* Tiny Dimmer Rotary Knob Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+          <span style={{ fontSize: '0.45rem', fontFamily: 'JetBrains Mono, monospace', color: '#8c7d6b', letterSpacing: '0.5px', fontWeight: 700 }}>
+            LAMP
+          </span>
+
+          <div
+            tabIndex={0}
+            role="slider"
+            aria-valuemin={0}
+            aria-valuemax={3}
+            aria-valuenow={effectiveLevel}
+            aria-label={`Rotary Dimmer Knob - Level ${effectiveLevel}`}
+            onKeyDown={handleKeyDown}
+            style={{
+              position: 'relative',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              backgroundColor: '#120d08',
+              border: '2px solid #b88339',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.9)'
+            }}
+          >
+            {/* Center Pointer */}
+            <div
+              className={`knob-rot-${effectiveLevel}`}
+              style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '50%',
+                backgroundColor: '#38291a',
+                border: '1px solid #523b24',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {/* Pointer Marker */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '2px',
+                  width: '2px',
+                  height: '7px',
+                  backgroundColor: isLampOn ? '#fbbf24' : '#6b7280',
+                  borderRadius: '1px'
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Brightness Level Label */}
-      <div style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono, monospace', color: isLampOn ? '#fbbf24' : '#8c7d6b', marginBottom: '8px', fontWeight: 700 }}>
-        BRIGHT: {brightnessLabels[effectiveLevel]}
-      </div>
-
-      {/* Power Toggle Switch Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onTogglePower();
-        }}
-        aria-label={isLampOn ? "Turn Lamp Power OFF" : "Turn Lamp Power ON"}
-        className="interactive-hover"
-        style={{
-          width: '100%',
-          backgroundColor: isLampOn ? '#d97706' : '#272018',
-          border: `1px solid ${isLampOn ? '#f59e0b' : '#47392b'}`,
-          borderRadius: '6px',
-          padding: '4px 8px',
-          color: isLampOn ? '#0f0d0b' : '#a39580',
-          fontSize: '0.65rem',
-          fontFamily: 'JetBrains Mono, monospace',
-          fontWeight: 800,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '4px',
-          cursor: 'pointer',
-          boxShadow: isLampOn ? '0 0 10px rgba(245, 158, 11, 0.4)' : 'none'
-        }}
-      >
-        <SunMedium size={11} />
-        <span>LAMP {isLampOn ? 'POWER ON' : 'POWER OFF'}</span>
-      </button>
+      {/* Temporary Tooltip Overlay */}
+      {tooltip && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '-28px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'rgba(217, 119, 6, 0.95)',
+            color: '#0f0d0b',
+            padding: '3px 8px',
+            borderRadius: '8px',
+            fontWeight: 800,
+            fontSize: '0.65rem',
+            fontFamily: 'JetBrains Mono, monospace',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.6)',
+            pointerEvents: 'none',
+            animation: 'fadeIn 0.15s ease',
+            zIndex: 30
+          }}
+        >
+          {tooltip}
+        </div>
+      )}
     </div>
   );
 }

@@ -418,7 +418,7 @@ export default function Garage() {
         isLampOn={isLampOn}
         lampBrightness={lampBrightness}
         playerState={isRadioOn ? playerState : 'stopped'}
-        currentTrackTitle={currentTrack.title}
+        currentTrack={currentTrack}
         currentTrackIndex={currentTrackIndex}
         totalTracks={playlist.length}
         onToggleFanPower={handleToggleFanPower}
